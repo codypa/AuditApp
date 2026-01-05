@@ -16,8 +16,10 @@ while true; do
 	echo -e "${PURPLE}7) Show locked accounts${RESET}"
 	echo -e "${PURPLE}8) Password changes/Identity changes${RESET}"
 	echo -e "${PURPLE}9) Privileged users${RESET}"
-	echo -e "${PURPLE}10) Exit app${RESET}"
-	read -p "Please select your audit check [1-10]: " choice
+	echo -e "${PURPLE}10) Last shutdown/reboots${RESET}"
+	echo -e "${PURPLE}11) Application starts/stops${RESET}"
+	echo -e "${PURPLE}12) Exit app${RESET}"
+	read -p "Please select your audit check [1-12]: " choice
 
 	case $choice in
 		1)
@@ -76,7 +78,22 @@ while true; do
 			lid -g wheel
 			echo -e "${RESET}"
 			;;
-		10)
+                10)
+                        echo -e "${GREEN}"
+			read -p "Enter start date (i.e. YYYY-MM-DD): " date
+			echo "==============REBOOTS============="
+                        last reboot -s $date
+                        echo "==============SHUTDOWNS==========="
+			last shutdown -s $date
+                        echo -e "${RESET}"
+                        ;;
+		11)
+                        echo -e "${GREEN}"
+                        read -p "Enter start date (i.e. YYYY-MM-DD): " date
+                        journalctl --since $date | grep -E "Started|Stopped"
+                        echo -e "${RESET}"
+                        ;;
+		12)
 			echo -e "${PURPLE}Exiting RAND audit app.${RESET}"
 			exit 0
 			;;
