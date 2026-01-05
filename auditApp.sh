@@ -18,8 +18,13 @@ while true; do
 	echo -e "${PURPLE}9) Privileged users${RESET}"
 	echo -e "${PURPLE}10) Last shutdown/reboots${RESET}"
 	echo -e "${PURPLE}11) Application starts/stops${RESET}"
-	echo -e "${PURPLE}12) Exit app${RESET}"
-	read -p "Please select your audit check [1-12]: " choice
+	echo -e "${PURPLE}12) Special Privilege Use${RESET}"
+	echo -e "${PURPLE}13) System Config Check${RESET}"
+	echo -e "${PURPLE}14) Print Activity${RESET}"
+	echo -e "${PURPLE}15) User/Group Management${RESET}"
+	echo -e "${PURPLE}16) Media Mount/Umount${RESET}"
+	echo -e "${PURPLE}17) Exit app${RESET}"
+	read -p "Please select your audit check [1-16]: " choice
 
 	case $choice in
 		1)
@@ -78,22 +83,58 @@ while true; do
 			lid -g wheel
 			echo -e "${RESET}"
 			;;
-                10)
-                        echo -e "${GREEN}"
+        10)
+            echo -e "${GREEN}"
 			read -p "Enter start date (i.e. YYYY-MM-DD): " date
 			echo "==============REBOOTS============="
-                        last reboot -s $date
-                        echo "==============SHUTDOWNS==========="
+            last reboot -s $date
+            echo "==============SHUTDOWNS==========="
 			last shutdown -s $date
-                        echo -e "${RESET}"
-                        ;;
+            echo -e "${RESET}"
+            ;;
 		11)
-                        echo -e "${GREEN}"
-                        read -p "Enter start date (i.e. YYYY-MM-DD): " date
-                        journalctl --since $date | grep -E "Started|Stopped"
-                        echo -e "${RESET}"
-                        ;;
+            echo -e "${GREEN}"
+            read -p "Enter start date (i.e. YYYY-MM-DD): " date
+            journalctl --since $date | grep -E "Started|Stopped"
+            echo -e "${RESET}"
+            ;;
 		12)
+			echo -e "${GREEN}"
+            read -p "Enter start date (i.e. 5/15/2025): " date
+		    ausearch -k privileged -x sudo -ts $date | aureport -x
+		    echo -e "${RESET}"
+            ;;
+		13)
+			echo -e "${GREEN}"
+			echo "OS_Version=$(cat /etc/redhat-release)"
+
+			echo "Antivirus_Version=$(/opt/McAfee/ens/tp/bin/mfetpcli --version | grep ^Version)"
+
+			echo "Kernel_Update=$(rpm -q --last kernel | head -1)"
+
+			echo "Critical_Package_Update=$(dnf history list)"
+
+			echo -e "${RESET}"
+			;;
+		14)
+			echo -e "${GREEN}"
+			lpstat -t
+			echo "If No destination added, then printer is not configured."
+			echo -e "${RESET}"
+			;;
+        15)
+            echo -e "${GREEN}"
+			read -p "Enter start date (i.e. MM/DD/YYYY): " date
+            ausearch -k audit_rules_usergroup_modification -ts $date -i
+            echo -e "${RESET}"
+            ;;
+		16)
+            echo -e "${GREEN}"
+            read -p "Enter start date (i.e. MM/DD/YYYY): " date
+			ausearch -k perm_mod -ts $date -i | grep mount
+            echo -e "${RESET}"
+            ;;
+		17)
 			echo -e "${PURPLE}Exiting RAND audit app.${RESET}"
 			exit 0
 			;;
